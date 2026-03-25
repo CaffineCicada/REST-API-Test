@@ -1,19 +1,29 @@
+// src/db/index.ts
 import initSqlJs from "sql.js";
 import fs from "fs";
 import path from "path";
 
-const DB_PATH = "./data/app.db";
+// Database file path
+const DB_PATH = path.resolve(__dirname, "../../data/app.db");
 
-export let db: InstanceType<Awaited<ReturnType<typeof initSqlJs>>["Database"]>;
+// Exported database instance
+export let db: InstanceType<
+  Awaited<ReturnType<typeof initSqlJs>>["Database"]
+>;
 
+/**
+ * Initialize the SQLite database
+ */
 export async function initDb() {
   const SQL = await initSqlJs();
 
+  // Ensure the database folder exists
   const dbDir = path.dirname(DB_PATH);
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
 
+  // Load existing database or create new
   if (fs.existsSync(DB_PATH)) {
     const fileBuffer = fs.readFileSync(DB_PATH);
     db = new SQL.Database(fileBuffer);
@@ -21,6 +31,7 @@ export async function initDb() {
     db = new SQL.Database();
   }
 
+  // Create tables if they don't exist
   db.run(`
     CREATE TABLE IF NOT EXISTS contacts (
       id         TEXT PRIMARY KEY,
@@ -73,7 +84,11 @@ export async function initDb() {
   console.log("[db] Database ready at", DB_PATH);
 }
 
+/**
+ * Persist the in-memory DB to file
+ */
 export function persist() {
+  if (!db) return;
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
