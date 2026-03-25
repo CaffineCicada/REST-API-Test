@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { triggerCampaignSend } from "../services/scheduler";
 
-const router = Router();
+const campaignsRouter = Router();
 
 /**
  * POST /campaigns
